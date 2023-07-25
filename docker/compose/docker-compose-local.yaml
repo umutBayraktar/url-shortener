@@ -4,6 +4,9 @@ services:
   db:
     image: postgres:14-alpine
     container_name: urlshortener-postgres
+    hostname: db
+    volumes:
+      - ../data/db:/var/lib/potgresql/data
     env_file:
       - ../../urlshortener/.env
     ports:
@@ -27,7 +30,7 @@ services:
     # However, Compose does not wait until a container is “ready”
     # (whatever that means for your particular application) - only until it’s
     # running. There’s a good reason for this.
-    command: sh docker/scripts/entrypoint.sh localhost
+    command: sh docker/scripts/entrypoint.sh db
     volumes:
       # Mount src to app
       - ../..:/code/
