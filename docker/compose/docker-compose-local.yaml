@@ -1,0 +1,39 @@
+version: "3"
+services:
+  # PostgreSQL
+  db:
+    image: postgres:14-alpine
+    container_name: urlshortener-postgres
+    env_file:
+      - ../../urlshortener/.env
+    ports:
+      - "5432:5432"
+  # Redis
+  redis:
+    image: redis:5.0
+    hostname: redis
+    ports:
+      - "6379:6379"
+  # Django
+  web:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile
+    container_name: urlshortener-app
+    hostname: web
+    env_file:
+      - ../../urlshortener/.env
+    # From documentation:
+    # However, Compose does not wait until a container is “ready”
+    # (whatever that means for your particular application) - only until it’s
+    # running. There’s a good reason for this.
+    command: sh docker/scripts/entrypoint.sh localhost
+    volumes:
+      # Mount src to app
+      - ../..:/code/
+    ports:
+       - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    restart: always
