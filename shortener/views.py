@@ -15,14 +15,14 @@ class HashURLAPIView(APIView):
         if serializer.is_valid():
             url = serializer.validated_data['url']
             hash_value = get_md5_hash(url)
-            import pdb;pdb.set_trace()
-            url_item = URLItem.objects.get(reference=hash_value)
-            if url_item:
-                return_url = reverse('shortener:redirect_to_hashed_url', kwargs={'hashed_url': url_item.reference})
-                return Response({'hashed_url': return_url}, status=status.HTTP_200_OK)
-            url_item = URLItem.objects.create(reference=hash_value, url=url)
-            return Response({'hashed_url': url_item.reference}, status=status.HTTP_201_CREATED)
-            
+            try:
+                url_item = URLItem.objects.get(reference=hash_value)
+                if url_item:
+                    return_url = reverse('shortener:redirect_to_hashed_url', kwargs={'hashed_url': url_item.reference})
+                    return Response({'hashed_url': return_url}, status=status.HTTP_200_OK)
+            except URLItem.DoesNotExist:
+                url_item = URLItem.objects.create(reference=hash_value, url=url)
+                return Response({'hashed_url': url_item.reference}, status=status.HTTP_201_CREATED)   
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
